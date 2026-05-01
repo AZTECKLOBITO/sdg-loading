@@ -1,491 +1,510 @@
 <!DOCTYPE html>
+<!--
+  aztecklobito.github.io/sdg-loading/index.html  (v2 - AI ART ROTATION)
+  SDG Clone Wars RP - Server Loading Screen
+  Coruscant Lower Levels // Six-Image Random Rotation
+  Deployed via sv_loadingurl
+  Last updated: May 2026
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SDG Clone Wars RP — Loading</title>
+<title>SDG Clone Wars RP // Level 1313</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- preload all 6 backgrounds so the rotation feels instant -->
+<link rel="preload" as="image" href="bg_01_tower.png">
+<link rel="preload" as="image" href="bg_02_cantina.png">
+<link rel="preload" as="image" href="bg_03_spiceden.png">
+<link rel="preload" as="image" href="bg_04_dockingbay.png">
+<link rel="preload" as="image" href="bg_05_market.png">
+<link rel="preload" as="image" href="bg_06_skyview.png">
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #04030a;
+    overflow: hidden;
+    font-family: 'Roboto Condensed', sans-serif;
+    color: #e8edf2;
+  }
 
-:root {
-  --gold: #FFB432;
-  --bg:   #05070E;
-  --pan:  #0A0D18;
-  --wh:   rgba(232,223,200,0.86);
-  --dim:  rgba(130,120,100,0.47);
-}
+  .stage { position: fixed; inset: 0; overflow: hidden; }
 
-*{margin:0;padding:0;box-sizing:border-box}
+  /* ============ AI BACKGROUND IMAGE ============ */
+  /* `cover` fills the screen no matter the aspect ratio.
+     `center` keeps the focal point in frame. */
+  .ai-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    /* dark overlay so HUD text reads cleanly on top */
+    z-index: 1;
+  }
+  /* secondary darkening layer above background, below content */
+  .bg-darken {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 18%, transparent 70%, rgba(0,0,0,0.75) 100%),
+      linear-gradient(90deg, rgba(0,0,0,0.35) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.35) 100%);
+  }
 
-html,body{
-  width:100%;height:100%;
-  overflow:hidden;
-  background:var(--bg);
-  font-family:'Roboto Condensed',sans-serif;
-  color:var(--wh);
-}
+  /* everything else above the bg sits at z-index 10+ */
+  .layer { position: absolute; z-index: 10; pointer-events: none; }
+  .layer.interactive { pointer-events: auto; }
 
-/* ── CANVAS fills the screen ── */
-#c{position:fixed;inset:0;width:100%;height:100%}
+  /* ============ TOP STATUS BAR ============ */
+  .topbar {
+    position: absolute;
+    top: 4.5%; left: 6%; right: 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: clamp(9px, 0.85vw, 13px);
+    letter-spacing: 0.25em;
+    color: rgba(232,237,242,0.7);
+    text-shadow: 0 0 8px rgba(0,0,0,0.95);
+    z-index: 10;
+  }
+  .topbar-factions { display: flex; gap: clamp(8px, 1.2vw, 22px); }
+  .topbar .clones { color: #7AC4E8; }
+  .topbar .civs   { color: #00E5FF; }
+  .topbar .scum   { color: #FF3D8A; }
+  .topbar .sep    { color: #FFB432; }
+  .topbar-status  { display: flex; align-items: center; gap: 8px; }
+  .pulse-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #33CC66;
+    box-shadow: 0 0 8px #33CC66;
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
 
-/* ── CONTENT sits above canvas ── */
-#ui{
-  position:fixed;inset:0;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  pointer-events:none;
-  user-select:none;
-}
+  /* ============ TITLE BLOCK ============ */
+  .title-wrap {
+    position: absolute;
+    top: 24%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 92%;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .kicker {
+    font-size: clamp(9px, 0.95vw, 15px);
+    letter-spacing: 0.6em;
+    color: #FFB432;
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0,0,0,0.95);
+  }
+  .sdg-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: clamp(12px, 1.5vw, 28px);
+    margin-bottom: 8px;
+  }
+  .sdg-divider {
+    flex: 0 0 auto;
+    width: clamp(40px, 6vw, 110px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #FFB432);
+  }
+  .sdg-divider.right { background: linear-gradient(270deg, transparent, #FFB432); }
+  .sdg-monogram {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: clamp(5px, 0.7vw, 12px) clamp(12px, 1.6vw, 28px);
+    background: rgba(4,3,10,0.55);
+    backdrop-filter: blur(2px);
+  }
+  .sdg-monogram .corner { position: absolute; width: 14px; height: 14px; }
+  .sdg-monogram .corner.tl { top: 0; left: 0;  border-top: 2px solid #FFB432; border-left: 2px solid #FFB432; }
+  .sdg-monogram .corner.tr { top: 0; right: 0; border-top: 2px solid #FFB432; border-right: 2px solid #FFB432; }
+  .sdg-monogram .corner.bl { bottom: 0; left: 0;  border-bottom: 2px solid #FFB432; border-left: 2px solid #FFB432; }
+  .sdg-monogram .corner.br { bottom: 0; right: 0; border-bottom: 2px solid #FFB432; border-right: 2px solid #FFB432; }
+  .sdg-monogram-text {
+    font-family: Impact, 'Bebas Neue', sans-serif;
+    font-size: clamp(24px, 3.4vw, 56px);
+    letter-spacing: 0.18em;
+    color: #FFB432;
+    font-weight: 900;
+    text-shadow: 0 0 14px rgba(255,180,50,0.55), 0 0 28px rgba(255,180,50,0.3);
+  }
+  .title-main {
+    font-family: Impact, 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 5vw, 96px);
+    letter-spacing: 0.05em;
+    line-height: 0.92;
+    color: #fff;
+    font-weight: 900;
+    text-shadow:
+      0 0 20px rgba(0,0,0,0.95),
+      0 0 40px rgba(0,0,0,0.85),
+      0 4px 0 rgba(0,0,0,0.6);
+  }
+  .title-main .rp {
+    color: #FFB432;
+    text-shadow: 0 0 12px rgba(255,180,50,0.6), 0 0 32px rgba(255,180,50,0.4), 0 0 40px rgba(0,0,0,0.95);
+  }
 
-/* top bar */
-#topbar{
-  position:fixed;top:0;left:0;right:0;height:30px;
-  border-top:2px solid var(--gold);
-  background:rgba(255,180,50,0.04);
-  display:flex;align-items:center;padding:0 14px;
-  z-index:10;
-}
-#topbar span{
-  font-size:10px;font-weight:500;letter-spacing:.12em;
-  color:rgba(255,180,50,0.35);
-  font-family:'Roboto Condensed',monospace;
-  text-transform:uppercase;
-}
+  /* ============ TAGLINE BLOCK ============ */
+  .tagline-wrap {
+    position: absolute;
+    top: 78%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 92%;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .tagline-divider {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .tagline-divider .line { width: clamp(40px, 5vw, 80px); height: 1px; background: #FFB432; opacity: 0.6; }
+  .tagline-divider .diamond { width: 6px; height: 6px; background: #FFB432; transform: rotate(45deg); }
+  .tagline-loc {
+    font-size: clamp(11px, 1.2vw, 18px);
+    letter-spacing: 0.45em;
+    color: #E8EDF2;
+    font-weight: 400;
+    text-shadow: 0 0 10px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8);
+  }
+  .tagline-sub {
+    font-size: clamp(9px, 0.95vw, 14px);
+    letter-spacing: 0.4em;
+    color: #C0C8D0;
+    margin-top: 8px;
+    text-shadow: 0 0 10px rgba(0,0,0,0.95);
+  }
 
-/* bottom bar */
-#botbar{
-  position:fixed;bottom:0;left:0;right:0;height:30px;
-  border-bottom:2px solid var(--gold);
-  background:rgba(255,180,50,0.04);
-  display:flex;align-items:center;justify-content:center;
-  z-index:10;
-}
-#botbar span{
-  font-size:10px;font-weight:500;letter-spacing:.12em;
-  color:rgba(255,180,50,0.32);
-  text-transform:uppercase;
-}
+  /* ============ INFO STRIP ============ */
+  .infostrip {
+    position: absolute;
+    bottom: 8%; left: 6%; right: 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    color: #E8EDF2;
+    z-index: 10;
+    pointer-events: none;
+    text-shadow: 0 0 10px rgba(0,0,0,0.95);
+  }
+  .infostrip-col { font-size: clamp(10px, 1vw, 14px); }
+  .infostrip-col.center { text-align: center; }
+  .infostrip-col.right  { text-align: right; }
+  .infostrip-label {
+    color: #FFB432;
+    letter-spacing: 0.3em;
+    font-weight: 700;
+    font-size: clamp(9px, 0.85vw, 12px);
+    margin-bottom: 4px;
+  }
+  .infostrip-value {
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  .infostrip-detail {
+    color: #B0B8C0;
+    font-size: clamp(9px, 0.85vw, 12px);
+    margin-top: 2px;
+  }
+  .infostrip a, .infostrip a:visited {
+    color: #FFB432;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    pointer-events: auto;
+  }
+  .infostrip a:hover { text-shadow: 0 0 8px rgba(255,180,50,0.8); }
+  .uplink-ok { color: #33CC66; font-size: clamp(9px, 0.85vw, 12px); margin-top: 2px; }
 
-/* center block */
-#center{
-  display:flex;flex-direction:column;
-  align-items:center;gap:0;
-  margin-top:-40px;
-}
+  /* ============ LOADING BAR ============ */
+  .loadbar-wrap {
+    position: absolute;
+    bottom: 3.5%; left: 6%; right: 6%;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .loadbar-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+    font-size: clamp(9px, 0.85vw, 12px);
+    letter-spacing: 0.3em;
+    color: #FFB432;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(0,0,0,0.95);
+  }
+  .loadbar-header .center { color: #E8EDF2; font-variant-numeric: tabular-nums; }
+  .loadbar-header .pct    { color: #E8EDF2; font-variant-numeric: tabular-nums; }
+  .loadbar {
+    position: relative;
+    height: 3px;
+    background: rgba(255,180,50,0.18);
+    box-shadow: 0 0 8px rgba(0,0,0,0.6);
+  }
+  .loadbar-fill {
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    width: 0%;
+    background: #FFB432;
+    box-shadow: 0 0 12px rgba(255,180,50,0.7);
+    transition: width 0.25s linear;
+  }
+  .loadbar-head {
+    position: absolute;
+    right: -1px; top: -3px;
+    width: 2px; height: 9px;
+    background: #fff;
+    box-shadow: 0 0 8px #fff;
+    animation: pulse-fast 1.2s ease-in-out infinite;
+  }
 
-/* cog canvas */
-#cog{display:block}
+  /* ============ OVERLAY EFFECTS ============ */
+  .scanlines {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    background: repeating-linear-gradient(180deg,
+      transparent 0px, transparent 2px,
+      rgba(0,0,0,0.5) 2px, rgba(0,0,0,0.5) 3px);
+    z-index: 9;
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%);
+    z-index: 9;
+  }
 
-/* title area */
-#titles{
-  text-align:center;
-  margin-top:8px;
-}
-#titles .sub1{
-  font-size:10px;font-weight:500;letter-spacing:.18em;
-  color:rgba(255,180,50,0.43);text-transform:uppercase;
-  margin-bottom:4px;
-}
-#titles .main{
-  font-size:28px;font-weight:800;letter-spacing:.04em;
-  color:var(--wh);text-transform:uppercase;
-  line-height:1;
-}
-#titles .sub2{
-  font-size:10px;font-weight:500;letter-spacing:.14em;
-  color:rgba(255,180,50,0.28);text-transform:uppercase;
-  margin-top:6px;
-}
+  /* ============ ANIMATIONS ============ */
+  @keyframes pulse-soft { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes pulse-fast { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  @keyframes slow-zoom { 0% { transform: scale(1.0); } 100% { transform: scale(1.06); } }
 
-/* progress bar area */
-#progwrap{
-  margin-top:18px;
-  width:min(660px,44vw);
-}
+  /* slow Ken Burns zoom on the bg so it doesn't feel static */
+  .ai-bg.zoom { animation: slow-zoom 60s linear infinite alternate; }
 
-/* step segments */
-#segs{
-  display:flex;gap:3px;margin-bottom:4px;
-}
-.seg{
-  flex:1;height:8px;
-  background:rgba(14,18,32,0.78);
-  outline:1px solid rgba(255,180,50,0.08);
-  transition:background .3s, outline-color .3s;
-}
-.seg.done{
-  background:rgba(255,180,50,0.12);
-  outline:1px solid rgba(255,180,50,0.24);
-}
-
-/* bar */
-#bartrack{
-  position:relative;height:6px;
-  background:rgba(14,18,32,1);
-  outline:1px solid rgba(255,180,50,0.20);
-}
-#barfill{
-  position:absolute;left:0;top:0;bottom:0;
-  width:0%;
-  background:linear-gradient(90deg,
-    rgba(255,180,50,0.5) 0%,
-    rgba(255,180,50,0.95) 100%);
-  transition:width .4s ease;
-}
-#barglint{
-  position:absolute;top:0;bottom:0;width:12px;
-  background:linear-gradient(90deg,
-    transparent,rgba(255,255,220,0.6),transparent);
-  transition:left .4s ease;
-  pointer-events:none;
-}
-#pct{
-  position:absolute;right:-44px;top:50%;transform:translateY(-50%);
-  font-size:16px;font-weight:700;
-  color:rgba(255,180,50,0.55);
-  white-space:nowrap;
-}
-
-/* status log */
-#log{
-  margin-top:10px;min-height:64px;
-}
-.logline{
-  font-size:10px;font-weight:500;letter-spacing:.10em;
-  text-transform:uppercase;line-height:1.7;
-  transition:opacity .3s;
-}
-.logline.done{color:rgba(62,200,100,0.32)}
-.logline.cur{color:rgba(255,180,50,0.82)}
-
-/* corner ident cards */
-.card{
-  position:fixed;bottom:46px;
-  width:220px;padding:0;
-  background:var(--pan);
-  z-index:10;
-}
-.card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--gold);
-}
-.card-stripe{
-  position:absolute;top:0;left:0;width:3px;height:100%;
-  background:var(--gold);
-}
-.card-inner{padding:8px 10px 10px 14px}
-.card-label{
-  font-size:10px;font-weight:500;letter-spacing:.14em;
-  color:rgba(255,180,50,0.36);text-transform:uppercase;
-  margin-bottom:4px;
-}
-.card-div{height:1px;background:rgba(255,180,50,0.16);margin:2px 0 6px}
-.card-val{
-  font-size:13px;font-weight:600;color:var(--wh);margin-bottom:3px;
-}
-.card-sub{
-  font-size:10px;font-weight:500;letter-spacing:.10em;
-  color:var(--dim);text-transform:uppercase;
-}
-.card-threat{color:rgba(220,70,70,0.67)}
-#card-l{left:14px;clip-path:polygon(6px 0,100% 0,100% 100%,0 100%,0 6px)}
-#card-r{right:14px;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)}
-
-/* grid overlay (CSS version — canvas handles the fancy stuff) */
+  /* narrow screens fallback */
+  @media (max-aspect-ratio: 4/3) {
+    .topbar-factions { display: none; }
+    .infostrip-col.center { display: none; }
+  }
 </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
+<div class="stage">
 
-<div id="topbar">
-  <span>GRAND ARMY OF THE REPUBLIC  //  GAR-NET SECURE  //  PERSONNEL MANAGEMENT SYSTEM v2.4</span>
-</div>
+  <!-- AI background image, set by JS at page load -->
+  <div class="ai-bg zoom" id="ai-bg"></div>
+  <div class="bg-darken"></div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
 
-<div id="botbar">
-  <span>SDG Clone Wars RP  //  LOADING  //  PLEASE WAIT</span>
-</div>
-
-<div id="ui">
-  <div id="center">
-    <canvas id="cog" width="320" height="320"></canvas>
-
-    <div id="titles">
-      <div class="sub1">Grand Army of the Republic</div>
-      <div class="main">SDG Clone Wars RP</div>
-      <div class="sub2">PERSONNEL MANAGEMENT SYSTEM v2.4</div>
+  <!-- top bar -->
+  <div class="topbar">
+    <div>SDG NETWORK // SECURE</div>
+    <div class="topbar-factions">
+      <span class="clones">CLONES</span><span class="sep">·</span>
+      <span class="civs">CIVS</span><span class="sep">·</span>
+      <span class="scum">SCUM</span>
     </div>
+    <div class="topbar-status">
+      <span class="pulse-dot"></span>
+      <span>UPLINK STABLE</span>
+    </div>
+  </div>
 
-    <div id="progwrap">
-      <div id="segs"></div>
-      <div id="bartrack">
-        <div id="barfill"></div>
-        <div id="barglint"></div>
-        <div id="pct">0%</div>
+  <!-- title -->
+  <div class="title-wrap">
+    <div class="kicker">— GALACTIC REPUBLIC ::: DROPSHIP INBOUND —</div>
+    <div class="sdg-row">
+      <div class="sdg-divider"></div>
+      <div class="sdg-monogram">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        <span class="sdg-monogram-text">SDG</span>
       </div>
-      <div id="log"></div>
+      <div class="sdg-divider right"></div>
+    </div>
+    <div class="title-main">CLONE WARS <span class="rp">RP</span></div>
+  </div>
+
+  <!-- tagline -->
+  <div class="tagline-wrap">
+    <div class="tagline-divider">
+      <div class="line"></div>
+      <div class="diamond"></div>
+      <div class="line"></div>
+    </div>
+    <div class="tagline-loc">LEVEL 1313 // CORUSCANT UNDERCITY</div>
+    <div class="tagline-sub">THE UNDERCITY DOESN'T CARE WHO YOU WERE</div>
+  </div>
+
+  <!-- bottom info strip (live GMod data injected by JS below) -->
+  <div class="infostrip">
+    <div class="infostrip-col left">
+      <div class="infostrip-label">::: NOW BOARDING</div>
+      <div class="infostrip-value" id="player-name">OPERATIVE</div>
+      <div class="infostrip-detail">DESTINATION: <span id="map-name">rp_coruscant_underlevels</span></div>
+    </div>
+    <div class="infostrip-col center">
+      <div style="color:#B0B8C0;letter-spacing:0.2em;font-size:clamp(9px,0.9vw,13px);">JOIN THE COMM</div>
+      <a href="https://discord.gg/Qv3gbmbfu3" target="_blank" rel="noopener" class="layer interactive">DISCORD.GG/QV3GBMBFU3</a>
+    </div>
+    <div class="infostrip-col right">
+      <div class="infostrip-label">DISTRICT POPULATION</div>
+      <div class="infostrip-value"><span id="player-count">--</span> / <span id="player-max">--</span> SOULS</div>
+      <div class="uplink-ok">UPLINK STABLE</div>
     </div>
   </div>
-</div>
 
-<!-- CORNER CARDS -->
-<div class="card" id="card-l">
-  <div class="card-stripe"></div>
-  <div class="card-inner">
-    <div class="card-label">Server Ident</div>
-    <div class="card-div"></div>
-    <div class="card-val">SDG-CWRP-2201</div>
-    <div class="card-sub">22 BBY  //  MID RIM</div>
+  <!-- loading bar -->
+  <div class="loadbar-wrap">
+    <div class="loadbar-header">
+      <span>DESCENDING</span>
+      <span class="center" id="loadbar-status">— ESTABLISHING UPLINK —</span>
+      <span class="pct"><span id="loadbar-pct">0</span>%</span>
+    </div>
+    <div class="loadbar">
+      <div class="loadbar-fill" id="loadbar-fill">
+        <div class="loadbar-head"></div>
+      </div>
+    </div>
   </div>
-</div>
 
-<div class="card" id="card-r">
-  <div class="card-stripe"></div>
-  <div class="card-inner">
-    <div class="card-label">Active Theatre</div>
-    <div class="card-div"></div>
-    <div class="card-val">OUTER RIM SIEGES</div>
-    <div class="card-sub card-threat">THREAT: ELEVATED</div>
-  </div>
 </div>
 
 <script>
-const STEPS = [
-  "INITIALISING GAR-NET SECURE CONNECTION",
-  "AUTHENTICATING REPUBLIC COMMAND AUTHORITY",
-  "LOADING TERRAIN AND ENVIRONMENTAL DATA",
-  "SPAWNING REPUBLIC ASSETS",
-  "SYNCHRONISING BATTALION ROSTER",
-  "CALIBRATING WEAPON SYSTEMS",
-  "LOADING PERSONNEL RECORDS",
-  "ESTABLISHING COMLINK FREQUENCIES",
-  "RUNNING FINAL DIAGNOSTICS",
-  "CLEARANCE GRANTED — WELCOME, TROOPER",
-];
+(function () {
+  'use strict';
 
-const G = {r:255,g:180,b:50};
-const gold = `rgba(${G.r},${G.g},${G.b}`;
+  // ============ RANDOM BACKGROUND ROTATION ============
+  // Six AI-generated backgrounds. Each connection picks one at random.
+  // Tower is weighted slightly higher because it has the SDG-aligned brand emblem.
+  var BACKGROUNDS = [
+    { src: 'bg_01_tower.png',      weight: 2 }, // tower with cyan emblem (headliner)
+    { src: 'bg_02_cantina.png',    weight: 1 },
+    { src: 'bg_03_spiceden.png',   weight: 1 },
+    { src: 'bg_04_dockingbay.png', weight: 1 },
+    { src: 'bg_05_market.png',     weight: 1 },
+    { src: 'bg_06_skyview.png',    weight: 1 }
+  ];
 
-/* ── BACKGROUND CANVAS ── */
-const bg = document.getElementById('c');
-const bx = bg.getContext('2d');
-let cogA = 0, sweepA = 0, blink = 0, blinkOn = false;
-let lastT = 0;
-
-function resizeBG(){
-  bg.width  = window.innerWidth;
-  bg.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeBG);
-resizeBG();
-
-function drawBG(now){
-  const dt = Math.min((now - lastT)/1000, 0.05);
-  lastT = now;
-  cogA   += dt * 0.22;
-  sweepA += dt * 0.75;
-  blink  += dt;
-  if(blink > 0.33){ blink=0; blinkOn=!blinkOn; updateLog(); }
-
-  const sw = bg.width, sh = bg.height;
-  bx.clearRect(0,0,sw,sh);
-
-  /* bg */
-  bx.fillStyle='#05070E'; bx.fillRect(0,0,sw,sh);
-
-  /* grid */
-  bx.strokeStyle=`${gold},0.016)`;
-  bx.lineWidth=1;
-  for(let x=0;x<sw;x+=48){ bx.beginPath();bx.moveTo(x,0);bx.lineTo(x,sh);bx.stroke(); }
-  for(let y=0;y<sh;y+=48){ bx.beginPath();bx.moveTo(0,y);bx.lineTo(sw,y);bx.stroke(); }
-
-  /* scanlines */
-  bx.fillStyle='rgba(0,0,0,0.07)';
-  for(let y=0;y<sh;y+=3) bx.fillRect(0,y,sw,1);
-
-  /* vignette */
-  bx.fillStyle='rgba(0,0,0,0.24)';
-  bx.fillRect(0,0,100,sh); bx.fillRect(sw-100,0,100,sh);
-  bx.fillRect(0,0,sw,80);  bx.fillRect(0,sh-80,sw,80);
-
-  /* cog + sweep drawn on cog canvas */
-  drawCog(dt);
-
-  requestAnimationFrame(drawBG);
-}
-
-/* ── COG CANVAS ── */
-const cogC = document.getElementById('cog');
-const cc   = cogC.getContext('2d');
-const CR   = 160; // canvas half-size
-const R    = 125; // cog outer radius
-
-function drawCog(){
-  cc.clearRect(0,0,320,320);
-  const cx=160, cy=160;
-
-  /* sweep beam */
-  for(let i=0;i<20;i++){
-    const ang = sweepA - (i/20)*0.4;
-    cc.strokeStyle=`${gold},${((1-i/20)*0.045).toFixed(3)})`;
-    cc.lineWidth=1;
-    cc.beginPath(); cc.moveTo(cx,cy);
-    cc.lineTo(cx+Math.cos(ang)*190, cy+Math.sin(ang)*190);
-    cc.stroke();
-  }
-
-  /* outer ring */
-  cc.strokeStyle=`${gold},0.10)`;
-  cc.lineWidth=1;
-  cc.beginPath(); cc.arc(cx,cy,R+18,0,Math.PI*2); cc.stroke();
-
-  /* tick marks on outer ring */
-  cc.strokeStyle=`${gold},0.14)`;
-  for(let i=0;i<32;i++){
-    const ang=cogA+(i/32)*Math.PI*2;
-    const r0=R+13, r1=i%4===0?R+20:R+16;
-    cc.beginPath();
-    cc.moveTo(cx+Math.cos(ang)*r0, cy+Math.sin(ang)*r0);
-    cc.lineTo(cx+Math.cos(ang)*r1, cy+Math.sin(ang)*r1);
-    cc.stroke();
-  }
-
-  /* cog teeth (8 teeth) */
-  cc.strokeStyle=`${gold},0.09)`;
-  cc.lineWidth=1;
-  for(let i=0;i<8;i++){
-    const ang=cogA+(i/8)*Math.PI*2;
-    const ri=R*0.72;
-    /* radial spoke */
-    cc.beginPath();
-    cc.moveTo(cx+Math.cos(ang)*ri, cy+Math.sin(ang)*ri);
-    cc.lineTo(cx+Math.cos(ang)*R,  cy+Math.sin(ang)*R);
-    cc.stroke();
-    /* tooth tip */
-    cc.beginPath();
-    cc.moveTo(cx+Math.cos(ang-0.12)*R, cy+Math.sin(ang-0.12)*R);
-    cc.lineTo(cx+Math.cos(ang)*R*1.10, cy+Math.sin(ang)*R*1.10);
-    cc.lineTo(cx+Math.cos(ang+0.12)*R, cy+Math.sin(ang+0.12)*R);
-    cc.stroke();
-  }
-
-  /* inner ring */
-  cc.strokeStyle=`${gold},0.07)`;
-  cc.lineWidth=1;
-  cc.beginPath(); cc.arc(cx,cy,R*0.72,0,Math.PI*2); cc.stroke();
-
-  /* inner ring segments */
-  cc.strokeStyle=`${gold},0.06)`;
-  for(let i=0;i<32;i++){
-    const a1=cogA+(i/32)*Math.PI*2, a2=cogA+((i+1)/32)*Math.PI*2;
-    const ri=R*0.72;
-    cc.beginPath();
-    cc.moveTo(cx+Math.cos(a1)*R,  cy+Math.sin(a1)*R);
-    cc.lineTo(cx+Math.cos(a2)*R,  cy+Math.sin(a2)*R);
-    cc.stroke();
-    cc.beginPath();
-    cc.moveTo(cx+Math.cos(a1)*ri, cy+Math.sin(a1)*ri);
-    cc.lineTo(cx+Math.cos(a2)*ri, cy+Math.sin(a2)*ri);
-    cc.stroke();
-  }
-
-  /* center hub */
-  cc.strokeStyle=`${gold},0.18)`;
-  cc.lineWidth=1;
-  cc.beginPath(); cc.arc(cx,cy,22,0,Math.PI*2); cc.stroke();
-  cc.strokeStyle=`${gold},0.09)`;
-  cc.beginPath(); cc.arc(cx,cy,10,0,Math.PI*2); cc.stroke();
-
-  /* 6-point star inside hub */
-  cc.strokeStyle=`${gold},0.22)`;
-  cc.lineWidth=1;
-  for(let i=0;i<6;i++){
-    const a=cogA+(i/6)*Math.PI*2;
-    cc.beginPath();
-    cc.moveTo(cx+Math.cos(a)*10, cy+Math.sin(a)*10);
-    cc.lineTo(cx+Math.cos(a)*20, cy+Math.sin(a)*20);
-    cc.stroke();
-  }
-}
-
-/* ── PROGRESS BAR & SEGMENTS ── */
-const segsEl  = document.getElementById('segs');
-const barFill = document.getElementById('barfill');
-const barGlit = document.getElementById('barglint');
-const pctEl   = document.getElementById('pct');
-
-/* build segments */
-STEPS.forEach(()=>{
-  const s=document.createElement('div');
-  s.className='seg'; segsEl.appendChild(s);
-});
-const segEls = segsEl.querySelectorAll('.seg');
-
-let prog = 0;
-let targetProg = 0;
-
-function setProgress(p){
-  targetProg = Math.min(1, Math.max(0, p));
-}
-
-function updateBar(){
-  prog += (targetProg - prog) * 0.08;
-  if(Math.abs(targetProg-prog)<0.0005) prog=targetProg;
-
-  const pct = Math.round(prog*100);
-  barFill.style.width = pct+'%';
-  barGlit.style.left  = (pct-1)+'%';
-  pctEl.textContent   = pct+'%';
-  pctEl.style.color   = prog>=1 ? 'var(--gold)' : 'rgba(255,180,50,0.55)';
-
-  const doneSegs = Math.floor(prog * STEPS.length);
-  segEls.forEach((s,i)=>{
-    s.classList.toggle('done', i < doneSegs);
-  });
-}
-
-/* ── STATUS LOG ── */
-const logEl = document.getElementById('log');
-
-function updateLog(){
-  const phase = Math.min(STEPS.length, Math.floor(prog * STEPS.length)+1);
-  const start = Math.max(0, phase-4);
-  logEl.innerHTML='';
-  for(let i=start;i<phase;i++){
-    const div=document.createElement('div');
-    const isCur = i===phase-1 && prog<1;
-    const isDone= i<phase-1;
-    div.className='logline '+(isCur?'cur':isDone?'done':'');
-    if(isCur){
-      div.textContent = '> '+STEPS[i]+(blinkOn?'_':'');
-    } else if(isDone){
-      div.textContent = '✓ '+STEPS[i];
+  function pickBackground() {
+    var totalWeight = 0;
+    for (var i = 0; i < BACKGROUNDS.length; i++) totalWeight += BACKGROUNDS[i].weight;
+    var roll = Math.random() * totalWeight;
+    var cumulative = 0;
+    for (var j = 0; j < BACKGROUNDS.length; j++) {
+      cumulative += BACKGROUNDS[j].weight;
+      if (roll < cumulative) return BACKGROUNDS[j].src;
     }
-    logEl.appendChild(div);
+    return BACKGROUNDS[0].src; // fallback
   }
-}
 
-/* ── ANIMATION LOOP ── */
-function tick(now){
-  updateBar();
-  requestAnimationFrame(tick);
-}
+  // set the background as soon as the page is ready
+  document.addEventListener('DOMContentLoaded', function () {
+    var bgEl = document.getElementById('ai-bg');
+    if (bgEl) {
+      var chosen = pickBackground();
+      bgEl.style.backgroundImage = 'url("' + chosen + '")';
+      // log for debugging - shows up in browser dev console
+      try { console.log('[SDG] loaded background: ' + chosen); } catch (e) {}
+    }
+  });
 
-requestAnimationFrame(t=>{ lastT=t; drawBG(t); });
-requestAnimationFrame(tick);
+  // ============ GMOD HOOKS ============
+  var totalFiles = 0;
+  var filesNeeded = 0;
 
-/* ── AUTO-PROGRESS (simulates loading, real servers push actual progress) ── */
-let elapsed = 0;
-const LOAD_TIME = 12000;
-const startTime = performance.now();
+  window.GameDetails = function (servername, serverurl, mapname, maxplayers, steamid, gamemode) {
+    try {
+      if (mapname) document.getElementById('map-name').textContent = mapname;
+      if (maxplayers) document.getElementById('player-max').textContent = maxplayers;
+      // try to parse "(NN/MM)" out of servername if the host includes it
+      if (servername) {
+        var m = servername.match(/(\d+)\s*\/\s*(\d+)/);
+        if (m) {
+          document.getElementById('player-count').textContent = m[1];
+          document.getElementById('player-max').textContent   = m[2];
+        }
+      }
+    } catch (e) {}
+  };
 
-function autoProgress(){
-  elapsed = performance.now() - startTime;
-  const p = Math.min(1, elapsed / LOAD_TIME);
-  setProgress(p);
-  if(p < 1) setTimeout(autoProgress, 50);
-}
-autoProgress();
+  window.SetFilesTotal = function (total) {
+    totalFiles = total || 0;
+    updateBar();
+  };
+
+  window.SetFilesNeeded = function (needed) {
+    filesNeeded = needed || 0;
+    updateBar();
+  };
+
+  window.DownloadingFile = function (filename) {
+    try {
+      var statusEl = document.getElementById('loadbar-status');
+      if (filename && statusEl) {
+        var clean = String(filename).split('/').pop().toUpperCase();
+        if (clean.length > 48) clean = clean.substring(0, 45) + '...';
+        statusEl.textContent = '— SYNC :: ' + clean + ' —';
+      }
+    } catch (e) {}
+  };
+
+  window.SetStatusChanged = function (status) {
+    try {
+      var statusEl = document.getElementById('loadbar-status');
+      if (status && statusEl) {
+        statusEl.textContent = '— ' + String(status).toUpperCase() + ' —';
+      }
+    } catch (e) {}
+  };
+
+  function updateBar() {
+    var pct = 0;
+    if (totalFiles > 0) {
+      var done = Math.max(0, totalFiles - filesNeeded);
+      pct = Math.min(100, Math.round((done / totalFiles) * 100));
+    }
+    var fill = document.getElementById('loadbar-fill');
+    var pctEl = document.getElementById('loadbar-pct');
+    if (fill)  fill.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct;
+  }
+
+  // idle creep so the bar isn't frozen at 0% while we wait for GMod's first call
+  var idle = 0;
+  var idleTimer = setInterval(function () {
+    if (totalFiles > 0) {
+      clearInterval(idleTimer);
+      return;
+    }
+    idle = Math.min(idle + 1, 8);
+    var fill = document.getElementById('loadbar-fill');
+    var pctEl = document.getElementById('loadbar-pct');
+    if (fill)  fill.style.width = idle + '%';
+    if (pctEl) pctEl.textContent = idle;
+  }, 400);
+
+})();
 </script>
 </body>
 </html>
