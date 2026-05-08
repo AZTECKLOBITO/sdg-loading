@@ -15,13 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- preload all 6 backgrounds so the rotation feels instant -->
-<link rel="preload" as="image" href="bg_01_tower.png">
-<link rel="preload" as="image" href="bg_02_cantina.png">
-<link rel="preload" as="image" href="bg_03_spiceden.png">
-<link rel="preload" as="image" href="bg_04_dockingbay.png">
-<link rel="preload" as="image" href="bg_05_market.png">
-<link rel="preload" as="image" href="bg_06_skyview.png">
+<!-- preload removed - old GMod CEF doesn't support modern preload semantics -->
 
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -124,7 +118,6 @@
     display: inline-flex; align-items: center; justify-content: center;
     padding: clamp(5px, 0.7vw, 12px) clamp(12px, 1.6vw, 28px);
     background: rgba(4,3,10,0.55);
-    backdrop-filter: blur(2px);
   }
   .sdg-monogram .corner { position: absolute; width: 14px; height: 14px; }
   .sdg-monogram .corner.tl { top: 0; left: 0;  border-top: 2px solid #FFB432; border-left: 2px solid #FFB432; }
@@ -403,7 +396,8 @@
     { src: 'bg_03_spiceden.png',   weight: 1 },
     { src: 'bg_04_dockingbay.png', weight: 1 },
     { src: 'bg_05_market.png',     weight: 1 },
-    { src: 'bg_06_skyview.png',    weight: 1 }
+    { src: 'bg_06_skyview.png',    weight: 1 },
+    { src: 'bg_07_skyline.png',    weight: 2 }  // wide skyline (great for text overlay)
   ];
 
   function pickBackground() {
